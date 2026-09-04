@@ -1,0 +1,105 @@
+from pydantic import BaseModel, EmailStr, Field
+from datetime import datetime
+from typing import Optional
+from fastapi import UploadFile
+
+# Artwork schemas
+class ArtworkBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    image_url: str
+
+class ArtworkCreate(ArtworkBase):
+    pass
+
+class ArtworkUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+
+class Artwork(ArtworkBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+# Testimonial schemas
+class TestimonialBase(BaseModel):
+    client_name: str
+    content: str
+    artwork_id: Optional[int] = None
+
+class TestimonialCreate(TestimonialBase):
+    pass
+
+class TestimonialUpdate(BaseModel):
+    client_name: Optional[str] = None
+    content: Optional[str] = None
+    visible: Optional[bool] = None
+    artwork_id: Optional[int] = None
+
+class Testimonial(TestimonialBase):
+    id: int
+    visible: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+# Contact request schemas
+class ContactRequestBase(BaseModel):
+    client_name: str
+    pet_name: Optional[str] = None
+    email: EmailStr
+    whatsapp: str
+    country: str
+    pet_image_url: Optional[str] = None
+    wants_promotions: bool = False
+    status: str = "pending"
+    notes: Optional[str] = None
+
+class ContactRequestCreate(ContactRequestBase):
+    honeypot: str = Field(default="", description="Honeypot field for spam protection")
+
+class ContactRequestUpdate(BaseModel):
+    client_name: Optional[str] = None
+    pet_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    whatsapp: Optional[str] = None
+    country: Optional[str] = None
+    pet_image_url: Optional[str] = None
+    wants_promotions: Optional[bool] = None
+    status: Optional[str] = None
+    notes: Optional[str] = None
+
+class ContactRequest(ContactRequestBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+# Admin schemas
+class AdminBase(BaseModel):
+    username: str
+
+class AdminCreate(AdminBase):
+    password: str
+
+class Admin(AdminBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+# Auth schemas
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
