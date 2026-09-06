@@ -1,12 +1,19 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app.models import Admin, Artwork, Testimonial, ContactRequest
 from app.routers import artworks, testimonials, contact_requests, auth_router
 
 app = FastAPI(title="Mascotas Tienda API", version="1.0.0")
 
-# Create tables
-Base.metadata.create_all(bind=engine)
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include routers
 app.include_router(auth_router.router, prefix="/api/auth", tags=["auth"])
