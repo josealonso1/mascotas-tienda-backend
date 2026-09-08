@@ -1,7 +1,15 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from enum import Enum
 from app.database import Base
+
+class ContactStatus(str, Enum):
+    pending = "pending"
+    contacted = "contacted"
+    in_progress = "in_progress"
+    shipped = "shipped"
+    delivered = "delivered"
 
 class Admin(Base):
     __tablename__ = "admins"
@@ -48,6 +56,6 @@ class ContactRequest(Base):
     country = Column(String, nullable=False)
     pet_image_url = Column(String, nullable=True)
     wants_promotions = Column(Boolean, default=False)
-    status = Column(String, default="pending")
+    status = Column(SQLEnum(ContactStatus), default=ContactStatus.pending)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 from typing import Optional
 from fastapi import UploadFile
+from app.models import ContactStatus
 
 # Artwork schemas
 class ArtworkBase(BaseModel):
@@ -57,7 +58,6 @@ class ContactRequestBase(BaseModel):
     country: str
     pet_image_url: Optional[str] = None
     wants_promotions: bool = False
-    status: str = "pending"
     notes: Optional[str] = None
 
 class ContactRequestCreate(ContactRequestBase):
@@ -71,11 +71,12 @@ class ContactRequestUpdate(BaseModel):
     country: Optional[str] = None
     pet_image_url: Optional[str] = None
     wants_promotions: Optional[bool] = None
-    status: Optional[str] = None
+    status: Optional[ContactStatus] = None
     notes: Optional[str] = None
 
 class ContactRequest(ContactRequestBase):
     id: int
+    status: ContactStatus
     created_at: datetime
     
     class Config:
