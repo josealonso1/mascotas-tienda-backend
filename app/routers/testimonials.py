@@ -3,14 +3,17 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Testimonial
 from app.schemas import TestimonialCreate, TestimonialUpdate, Testimonial as TestimonialSchema
-from app.auth import get_current_admin
+from app.auth import get_current_admin, get_current_admin_optional
 
 router = APIRouter()
 
 @router.get("/", response_model=list[TestimonialSchema])
-def get_testimonials(db: Session = Depends(get_db)):
-    """Get all visible testimonials"""
-    testimonials = db.query(Testimonial).filter(Testimonial.visible == True).all()
+def get_testimonials(db: Session = Depends(get_db), current_admin: dict = Depends(get_current_admin_optional)):
+    """Get all testimonials (admin) or only visible ones (public)"""
+    query = db.query(Testimonial)
+    if current_admin is None:
+        query = query.filter(Testimonial.visible == True)
+    testimonials = query.all()
     return testimonials
 
 @router.get("/{testimonial_id}", response_model=TestimonialSchema)

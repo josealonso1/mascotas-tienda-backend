@@ -6,8 +6,10 @@ from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from app.config import settings
 
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -40,4 +42,11 @@ def get_current_admin(token: str = Depends(oauth2_scheme)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
         )
+    return payload
+
+def get_current_admin_optional(token: str = Depends(oauth2_scheme_optional)):
+    """Like get_current_admin, but returns None instead of raising 401 if there's no token."""
+    if token is None:
+        return None
+    payload = decode_access_token(token)
     return payload
