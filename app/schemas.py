@@ -61,6 +61,7 @@ class ContactRequestBase(BaseModel):
     notes: Optional[str] = None
 
 class ContactRequestCreate(ContactRequestBase):
+    
     honeypot: str = Field(default="", description="Honeypot field for spam protection")
 
 class ContactRequestUpdate(BaseModel):
