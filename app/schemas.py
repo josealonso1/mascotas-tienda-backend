@@ -61,7 +61,8 @@ class ContactRequestBase(BaseModel):
     notes: Optional[str] = None
 
 class ContactRequestCreate(ContactRequestBase):
-    
+    whatsapp: str = Field(pattern=r"^\+[1-9]\d{6,14}$")
+    country: str = Field(pattern=r"^[A-Z]{2}$")
     honeypot: str = Field(default="", description="Honeypot field for spam protection")
 
 class ContactRequestUpdate(BaseModel):
