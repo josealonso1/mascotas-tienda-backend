@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -8,6 +9,8 @@ from app.schemas import ContactRequestCreate, ContactRequestUpdate, ContactReque
 from app.auth import get_current_admin
 from app.services.loops_service import send_new_contact_request_email, subscribe_contact_to_promotions
 from app.services.cloudinary_service import upload_image
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -27,20 +30,26 @@ async def create_contact_request(contact: ContactRequestCreate, db: Session = De
     db.refresh(db_contact)
     
     # Send notification email to admin
-    await send_new_contact_request_email(
-        client_name=db_contact.client_name,
-        pet_name=db_contact.pet_name,
-        client_email=db_contact.email,
-        whatsapp=db_contact.whatsapp,
-        country=db_contact.country,
-    )
+    try:
+        await send_new_contact_request_email(
+            client_name=db_contact.client_name,
+            pet_name=db_contact.pet_name,
+            client_email=db_contact.email,
+            whatsapp=db_contact.whatsapp,
+            country=db_contact.country,
+        )
+    except Exception:
+        logger.exception("Error sending new contact request email")
     
     # Subscribe to promotions if requested
     if db_contact.wants_promotions:
-        await subscribe_contact_to_promotions(
-            email=db_contact.email,
-            first_name=db_contact.client_name,
-        )
+        try:
+            await subscribe_contact_to_promotions(
+                email=db_contact.email,
+                first_name=db_contact.client_name,
+            )
+        except Exception:
+            logger.exception("Error subscribing contact to promotions")
     
     return db_contact
 
