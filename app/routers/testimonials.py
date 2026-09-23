@@ -1,11 +1,29 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Testimonial
-from app.schemas import TestimonialCreate, TestimonialUpdate, Testimonial as TestimonialSchema
+from app.models import Artwork, Testimonial
+from app.schemas import PublicTestimonialCreate, TestimonialCreate, TestimonialUpdate, Testimonial as TestimonialSchema
 from app.auth import get_current_admin, get_current_admin_optional
 
 router = APIRouter()
+
+@router.post("/submit", response_model=TestimonialSchema)
+def submit_testimonial(testimonial: PublicTestimonialCreate, db: Session = Depends(get_db)):
+    """Receive a public testimonial for later review by an administrator."""
+    if testimonial.honeypot:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid submission")
+
+    if testimonial.artwork_id is not None:
+        artwork = db.query(Artwork).filter(Artwork.id == testimonial.artwork_id).first()
+        if not artwork or not artwork.visible:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Artwork not found")
+
+    testimonial_data = testimonial.model_dump(exclude={"honeypot"})
+    db_testimonial = Testimonial(**testimonial_data, visible=False)
+    db.add(db_testimonial)
+    db.commit()
+    db.refresh(db_testimonial)
+    return db_testimonial
 
 @router.get("/", response_model=list[TestimonialSchema])
 def get_testimonials(db: Session = Depends(get_db), current_admin: dict = Depends(get_current_admin_optional)):

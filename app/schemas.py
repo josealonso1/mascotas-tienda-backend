@@ -9,6 +9,7 @@ class ArtworkBase(BaseModel):
     title: str
     description: Optional[str] = None
     image_url: str
+    visible: bool = True
 
 class ArtworkCreate(ArtworkBase):
     pass
@@ -17,6 +18,7 @@ class ArtworkUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     image_url: Optional[str] = None
+    visible: Optional[bool] = None
 
 class Artwork(ArtworkBase):
     id: int
@@ -33,7 +35,13 @@ class TestimonialBase(BaseModel):
     artwork_id: Optional[int] = None
 
 class TestimonialCreate(TestimonialBase):
-    pass
+    visible: bool = False
+
+class PublicTestimonialCreate(BaseModel):
+    client_name: str = Field(min_length=2, max_length=80)
+    content: str = Field(min_length=10, max_length=1000)
+    artwork_id: Optional[int] = None
+    honeypot: str = Field(default="", description="Honeypot field for spam protection")
 
 class TestimonialUpdate(BaseModel):
     client_name: Optional[str] = None

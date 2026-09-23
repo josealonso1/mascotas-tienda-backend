@@ -3,15 +3,18 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Artwork
 from app.schemas import ArtworkCreate, ArtworkUpdate, Artwork as ArtworkSchema
-from app.auth import get_current_admin
+from app.auth import get_current_admin, get_current_admin_optional
 from app.services.cloudinary_service import upload_image
 
 router = APIRouter()
 
 @router.get("/", response_model=list[ArtworkSchema])
-def get_artworks(db: Session = Depends(get_db)):
-    """Get all artworks"""
-    artworks = db.query(Artwork).all()
+def get_artworks(db: Session = Depends(get_db), current_admin: dict = Depends(get_current_admin_optional)):
+    """Get all artworks for an admin, or only visible ones for the public site."""
+    query = db.query(Artwork)
+    if current_admin is None:
+        query = query.filter(Artwork.visible == True)
+    artworks = query.all()
     return artworks
 
 @router.get("/{artwork_id}", response_model=ArtworkSchema)
